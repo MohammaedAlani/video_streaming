@@ -3,6 +3,7 @@
 namespace App\Events;
 
 use App\Models\Party;
+use App\Models\User;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -11,21 +12,21 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class VideoPartyEvent implements ShouldBroadcast
+class UserJoinedParty implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $party_id;
-
-    public $current_time;
     /**
      * Create a new event instance.
      */
-    public function __construct($party_id, $current_time)
+
+    public $party;
+    public $user;
+    public function __construct(Party $party, User $user)
     {
         //
-        $this->party_id = $party_id;
-        $this->current_time = $current_time;
+        $this->party = $party;
+        $this->user = $user;
     }
 
     /**
@@ -33,8 +34,22 @@ class VideoPartyEvent implements ShouldBroadcast
      *
      * @return array<int, \Illuminate\Broadcasting\Channel>
      */
-    public function broadcastOn()
+    public function broadcastOn(): array
     {
-        return new PrivateChannel('parties.'.$this->party_id);
+        return [
+            new PrivateChannel("party." . $this->party->id),
+        ];
+    }
+
+    public function boradcastWith()
+    {
+        return [
+            'new_user' => $this->user->name
+        ];
+    }
+
+    public function broadcastAs()
+    {
+        return 'user-joined-party';
     }
 }
