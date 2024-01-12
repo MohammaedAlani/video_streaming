@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -23,24 +25,10 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        // validate the request
-        $validator = Validator::make($request->all(), [
-            'email'=> 'required|string|email',
-            'password'=> 'required|string'
-        ]);
-
-        // check validator
-        if ($validator->fails()) {
-            return response()->json([
-                'message'=> 'Validation failed',
-                'errors'=> $validator->errors()
-            ], 422);
-        }
-
         // get the credentials
-        $credentials = $request->only(['email', 'password']);
+        $credentials = $request->validated();
 
         // check the credentials
         if (!$token = auth('api')->attempt($credentials)) {
@@ -85,24 +73,8 @@ class AuthController extends Controller
         ]);
     }
 
-    public function register(Request $request)
+    public function register(RegisterRequest $request)
     {
-        // validate the request
-        $validator = Validator::make($request->all(), [
-            'name'=> 'required|string',
-            'email'=> 'required|string|email|unique:users',
-            'password'=> 'required|string|confirmed'
-        ]);
-
-        // check validator
-        if ($validator->fails()) {
-            return response()->json([
-                'message'=> 'Validation failed',
-                'errors'=> $validator->errors()
-            ], 422);
-        }
-
-
         $user = User::create([
             'name' => $request->name,
             'email'=> $request->email,
