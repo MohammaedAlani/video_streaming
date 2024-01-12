@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\MessageController;
 use App\Http\Controllers\VideoController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -29,5 +30,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'user'], function ($router) {
     Route::post('video/upload', [VideoController::class, 'upload']);
 
     // create chat group
+    Route::get('chat/{party_id}', [MessageController::class, 'showPartyChat']);
+    Route::post('chat/create', [MessageController::class, 'create']);
 
 });
