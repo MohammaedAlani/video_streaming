@@ -26,18 +26,17 @@ class VideoController extends Controller
 
         // check if the upload has finished (in chunk mode it will send smaller files)
         if ($save->isFinished()) {
-            // save the file in video model
-            $video = new Video();
-            $video->title = $save->getFile()->getClientOriginalName();
-            $video->path = $save->getFile()->getPathname();
-            $video->user_id = $request->user()->id;
-            $video->description = 'Video description';
-            $video->created_at = now();
-            $video->updated_at = now();
-            $video->save();
-
             // not using move, you need to manually delete the file by unlink($save->getFile()->getPathname())
-            return $this->saveFile($save->getFile());
+            $fileSaved = $this->saveFile($save->getFile());
+
+            Video::create([
+                'title' => $save->getFile()->getClientOriginalName(),
+                'path' => $fileSaved['path'] . $fileSaved['name'],
+                'user_id' => $request->user()->id,
+                'description' => 'Video description',
+            ]);
+
+            return response()->json($fileSaved);
         }
 
         // we are in chunk mode, lets send the current progress
@@ -65,11 +64,11 @@ class VideoController extends Controller
         // move the file name
         $file->move($finalPath, $fileName);
 
-        return response()->json([
+        return [
             'path' => $filePath,
             'name' => $fileName,
             'mime_type' => $mime
-        ]);
+        ];
     }
 
     protected function createFilename(UploadedFile $file)
