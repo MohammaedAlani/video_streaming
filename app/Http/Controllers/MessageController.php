@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\ChatMessageSent;
+use App\Http\Requests\Chat\CreateRequest;
 use App\Models\Message;
 use Illuminate\Http\Request;
 
@@ -20,7 +21,7 @@ class MessageController extends Controller
         return response()->json($messages);
     }
 
-    public function create(Request $request)
+    public function create(CreateRequest $request)
     {
         $user = auth('api')->user();
 
@@ -33,7 +34,7 @@ class MessageController extends Controller
         broadcast(new ChatMessageSent($user, $message));
 
         return response()->json([
-            'status' => true,
+            'message' => 'Successfully sent message',
             'data' => []
         ]);
     }
