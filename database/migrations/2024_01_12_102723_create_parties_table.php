@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->integer('user_id');
             $table->integer('video_id');
-            $table->stirng('name');
+            $table->string('name');
             $table->string('url');
             $table->datetime('start_time');
             $table->datetime('end_time')->nullable();
