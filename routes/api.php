@@ -27,4 +27,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
 
 Route::group(['middleware' => 'api', 'prefix' => 'user'], function ($router) {
     Route::post('video/upload', [VideoController::class, 'upload']);
+
+    // create chat group
+
 });
