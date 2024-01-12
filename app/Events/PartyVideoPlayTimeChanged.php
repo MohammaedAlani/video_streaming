@@ -2,7 +2,6 @@
 
 namespace App\Events;
 
-use App\Models\Message;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -10,22 +9,23 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use App\Models\Party;
 
-class ChatMessageSent
+class PartyVideoPlayTimeChanged implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
+    public $party;
+
+    public $current_time;
     /**
      * Create a new event instance.
      */
-    public $party;
-    public $message_id;
-
-    public function __construct($message_id, $party)
+    public function __construct(Party $party, $current_time)
     {
         //
         $this->party = $party;
-        $this->message_id = $message_id;
+        $this->current_time = $current_time;
     }
 
     /**
@@ -40,16 +40,15 @@ class ChatMessageSent
         ];
     }
 
-    public function broadcastWith()
+    public function boradcastWith()
     {
-        $message = Message::where('id', $this->message_id)->with('user')->first()->toArray();
-        return $message;
+        return [
+            'current_time' => $this->current_time
+        ];
     }
 
     public function broadcastAs()
     {
-        return 'message-sent';
+        return 'video-stream-updated';
     }
-
-    
 }

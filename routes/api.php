@@ -2,8 +2,8 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\PartyController;
 use App\Http\Controllers\VideoController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -26,11 +26,19 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
 
 
 
-Route::group(['middleware' => 'api', 'prefix' => 'user'], function ($router) {
-    Route::post('video/upload', [VideoController::class, 'upload']);
-
-    // create chat group
+Route::group(['middleware' => 'api', 'prefix' => 'messages'], function ($router){
     Route::get('chat/{party_id}', [MessageController::class, 'showPartyChat']);
     Route::post('chat/create', [MessageController::class, 'create']);
-
 });
+
+Route::group(['middleware' => 'api', 'prefix' => 'videos'], function ($router){
+    Route::get('/', [VideoController::class, 'index']);
+    Route::get('/{$id}', [VideoController::class, 'showVideo']);
+    Route::post('/upload', [VideoController::class, 'upload']);
+});
+
+
+Route::group(['middleware' => 'api', 'prefix' => 'parties'], function ($router){
+    Route::get('/', [PartyController::class, 'index']);
+    Route::get('/{$id}', [PartyController::class, 'show']);
+}); 

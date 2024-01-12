@@ -2,13 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\VideoCollection;
 use App\Models\Video;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Pion\Laravel\ChunkUpload\Exceptions\UploadMissingFileException;
 use Pion\Laravel\ChunkUpload\Handler\AbstractHandler;
 use Pion\Laravel\ChunkUpload\Handler\HandlerFactory;
 use Pion\Laravel\ChunkUpload\Receiver\FileReceiver;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class VideoController extends Controller
 {
@@ -16,6 +20,37 @@ class VideoController extends Controller
     {
         $this->middleware('auth:api');
     }
+
+
+    
+    public function index()
+    {
+        //TODO: create collection and return data in the desired manner + pagination
+        $videos = Video::get();
+        return $videos;
+    }
+
+    public function showVideo($id)
+    {
+        $video = Video::findOrFail($id);
+
+        //TODO: check file path after uploading videos
+        $file_path = $video->path;
+        if (!Storage::exists($file_path)) {
+            return response()->json(["message" => "Video Not Found"], Response::HTTP_NOT_FOUND);
+        }
+
+        $headers = [
+            'Content-Type' => 'video/mp4', // Adjust the content type based on your video format
+        ];
+
+        return new StreamedResponse(function () use ($file_path) {
+            $stream = Storage::readStream($file_path);
+            fpassthru($stream);
+            fclose($stream);
+        }, Response::HTTP_OK, $headers);
+    }
+
 
     public function upload(Request $request) {
         // create the file receiver
