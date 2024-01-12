@@ -23,3 +23,9 @@ Broadcast::channel('parties.{party_id}', function (User $user) {
     }
     return false;
 });
+
+
+// channel for chat
+Broadcast::channel('send-message', function ($user) {
+    return $user;
+});

@@ -22,10 +22,8 @@ return new class extends Migration
             $table->enum('status', ['live', 'ended'])->default('scheduled');
             $table->timestamps();
 
-
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('video_id')->references('id')->on('videos')->onDelete('cascade');
-
         });
     }
 
