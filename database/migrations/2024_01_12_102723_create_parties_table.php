@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('parties', function (Blueprint $table) {
             $table->id();
-            $table->integer('user_id');
-            $table->integer('video_id');
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('video_id');
             $table->string('name');
             $table->datetime('start_time');
             $table->datetime('end_time')->nullable();
