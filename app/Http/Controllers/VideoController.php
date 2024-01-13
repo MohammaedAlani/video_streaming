@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\VideoCollection;
+use App\Models\Party;
 use App\Models\Video;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -25,9 +26,7 @@ class VideoController extends Controller
     
     public function index()
     {
-        //TODO: create collection and return data in the desired manner + pagination
-        $videos = Video::get();
-        return $videos;
+        return Video::orderBy('id', 'DESC')->get();
     }
 
     public function showVideo($id)
@@ -64,6 +63,9 @@ class VideoController extends Controller
         // receive the file
         $save = $receiver->receive();
 
+        //TODO: check
+        $image = $request->file('image')->store('images');
+
         // check if the upload has finished (in chunk mode it will send smaller files)
         if ($save->isFinished()) {
             // not using move, you need to manually delete the file by unlink($save->getFile()->getPathname())
@@ -74,6 +76,7 @@ class VideoController extends Controller
                 'path' => $fileSaved['path'] . $fileSaved['name'],
                 'user_id' => $request->user()->id,
                 'description' => 'Video description',
+                'image' => $image,
             ]);
 
             return response()->json($fileSaved);
@@ -99,7 +102,7 @@ class VideoController extends Controller
 
         // Build the file path
         $filePath = "upload/{$mime}/{$dateFolder}/";
-        $finalPath = storage_path("app/".$filePath);
+        $finalPath = public_path($filePath);
 
         // move the file name
         $file->move($finalPath, $fileName);
@@ -120,5 +123,16 @@ class VideoController extends Controller
         $filename .= "_" . md5(time()) . "." . $extension;
 
         return $filename;
+    }
+
+    public function show_videos($id)
+    {
+        $user_id = 1;
+        $video = Video::find($id);
+        $party = Party::where('video_id', $id)->where('user_id', $user_id)->first();
+        return [
+            'video' => $video,
+            'party' => $party
+        ];
     }
 }

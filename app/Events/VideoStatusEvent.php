@@ -2,7 +2,6 @@
 
 namespace App\Events;
 
-use App\Models\Message;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -11,21 +10,36 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class ChatMessageSent
+class VideoStatusEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     /**
      * Create a new event instance.
      */
-    public $party;
-    public $message_id;
 
-    public function __construct($message_id, $party)
+    public $status;
+    public $current_time;
+
+    public function __construct($status, $current_time = null)
     {
-        //
-        $this->party = $party;
-        $this->message_id = $message_id;
+        $this->status = $status;
+        $this->current_time = $current_time;
+        
+    }
+
+    public function broadcastWith()
+    {
+        if(is_null($this->current_time)) {
+            return ['status' => $this->status];
+        }
+        $user_id = 1;
+
+        return [
+            'status' => $this->status,
+            'current_time' => $this->current_time,
+            'user_id' => $user_id
+        ];
     }
 
     /**
@@ -36,20 +50,7 @@ class ChatMessageSent
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel("party." . $this->party->id),
+            new Channel('video-status-channel'),
         ];
     }
-
-    public function broadcastWith()
-    {
-        $message = Message::where('id', $this->message_id)->with('user')->first()->toArray();
-        return $message;
-    }
-
-    public function broadcastAs()
-    {
-        return 'message-sent';
-    }
-
-    
 }
