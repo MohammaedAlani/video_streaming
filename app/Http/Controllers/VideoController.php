@@ -2,19 +2,39 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\VideoCollection;
+use App\Http\Resources\VideoResource;
+use App\Models\Party;
 use App\Models\Video;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Pion\Laravel\ChunkUpload\Exceptions\UploadMissingFileException;
 use Pion\Laravel\ChunkUpload\Handler\AbstractHandler;
 use Pion\Laravel\ChunkUpload\Handler\HandlerFactory;
 use Pion\Laravel\ChunkUpload\Receiver\FileReceiver;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class VideoController extends Controller
 {
     public function __construct()
     {
         $this->middleware('auth:api');
+    }
+    
+    public function index()
+    {
+        $videos = Video::orderBy('id', 'DESC')->paginate();
+        $response = new VideoCollection($videos);
+        return $response;
+    }
+
+    public function show($id)
+    {
+        $video = Video::where('id', $id)->first();
+        $response = new VideoResource($video);
+        return $response;
     }
 
     public function upload(Request $request) {
@@ -33,12 +53,15 @@ class VideoController extends Controller
         if ($save->isFinished()) {
             // not using move, you need to manually delete the file by unlink($save->getFile()->getPathname())
             $fileSaved = $this->saveFile($save->getFile());
-
-            Video::create([
+            $imageData = $this->saveFile($request->file('image'));
+            $imagePath = $imageData['path'] . $imageData['name'];
+            Video::create([ 
                 'title' => $save->getFile()->getClientOriginalName(),
+                'extension' => $save->getFile()->getClientOriginalExtension(),
                 'path' => $fileSaved['path'] . $fileSaved['name'],
                 'user_id' => $request->user()->id,
                 'description' => 'Video description',
+                'image' => $imagePath,
             ]);
 
             return response()->json($fileSaved);
@@ -64,7 +87,7 @@ class VideoController extends Controller
 
         // Build the file path
         $filePath = "upload/{$mime}/{$dateFolder}/";
-        $finalPath = storage_path("app/".$filePath);
+        $finalPath = public_path($filePath);
 
         // move the file name
         $file->move($finalPath, $fileName);

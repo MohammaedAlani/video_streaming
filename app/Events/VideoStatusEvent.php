@@ -10,22 +10,28 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
-class VideoPartyEvent implements ShouldBroadcast
+class VideoStatusEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $party_id;
-
-    public $current_time;
     /**
      * Create a new event instance.
      */
-    public function __construct($party_id, $current_time)
+
+    public $status;
+    public $party;
+
+    public function __construct(Party $party, $status)
     {
-        //
-        $this->party_id = $party_id;
-        $this->current_time = $current_time;
+        $this->status = $status;
+        $this->party = $party;
+    }
+
+    public function broadcastWith()
+    {
+        return ['status' => $this->status];        
     }
 
     /**
@@ -33,8 +39,10 @@ class VideoPartyEvent implements ShouldBroadcast
      *
      * @return array<int, \Illuminate\Broadcasting\Channel>
      */
-    public function broadcastOn()
+    public function broadcastOn(): array
     {
-        return new PrivateChannel('parties.'.$this->party_id);
+        return [
+            new Channel('video-channel-party' . $this->party->id),
+        ];
     }
 }
