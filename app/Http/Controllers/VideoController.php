@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\VideoCollection;
+use App\Http\Resources\VideoResource;
 use App\Models\Party;
 use App\Models\Video;
 use Illuminate\Http\Request;
@@ -21,35 +22,20 @@ class VideoController extends Controller
     {
         $this->middleware('auth:api');
     }
-
-
     
     public function index()
     {
-        return Video::orderBy('id', 'DESC')->get();
+        $videos = Video::orderBy('id', 'DESC')->paginate();
+        $response = new VideoCollection($videos);
+        return $response;
     }
 
-    public function showVideo($id)
+    public function show($id)
     {
-        $video = Video::findOrFail($id);
-
-        //TODO: check file path after uploading videos
-        $file_path = $video->path;
-        if (!Storage::exists($file_path)) {
-            return response()->json(["message" => "Video Not Found"], Response::HTTP_NOT_FOUND);
-        }
-
-        $headers = [
-            'Content-Type' => 'video/mp4', // Adjust the content type based on your video format
-        ];
-
-        return new StreamedResponse(function () use ($file_path) {
-            $stream = Storage::readStream($file_path);
-            fpassthru($stream);
-            fclose($stream);
-        }, Response::HTTP_OK, $headers);
+        $video = Video::where('id', $id)->first();
+        $response = new VideoResource($video);
+        return $response;
     }
-
 
     public function upload(Request $request) {
         // create the file receiver
@@ -63,20 +49,19 @@ class VideoController extends Controller
         // receive the file
         $save = $receiver->receive();
 
-        //TODO: check
-        $image = $request->file('image')->store('images');
-
         // check if the upload has finished (in chunk mode it will send smaller files)
         if ($save->isFinished()) {
             // not using move, you need to manually delete the file by unlink($save->getFile()->getPathname())
             $fileSaved = $this->saveFile($save->getFile());
-
-            Video::create([
+            $imageData = $this->saveFile($request->file('image'));
+            $imagePath = $imageData['path'] . $imageData['name'];
+            Video::create([ 
                 'title' => $save->getFile()->getClientOriginalName(),
+                'extension' => $save->getFile()->getClientOriginalExtension(),
                 'path' => $fileSaved['path'] . $fileSaved['name'],
                 'user_id' => $request->user()->id,
                 'description' => 'Video description',
-                'image' => $image,
+                'image' => $imagePath,
             ]);
 
             return response()->json($fileSaved);
@@ -123,16 +108,5 @@ class VideoController extends Controller
         $filename .= "_" . md5(time()) . "." . $extension;
 
         return $filename;
-    }
-
-    public function show_videos($id)
-    {
-        $user_id = 1;
-        $video = Video::find($id);
-        $party = Party::where('video_id', $id)->where('user_id', $user_id)->first();
-        return [
-            'video' => $video,
-            'party' => $party
-        ];
     }
 }

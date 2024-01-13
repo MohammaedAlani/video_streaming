@@ -27,20 +27,19 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
 
 Route::group(['middleware' => 'api', 'prefix' => 'videos'], function ($router){
     Route::get('/', [VideoController::class, 'index']);
-    Route::get('/{id}', [VideoController::class, 'showVideo']);
+    Route::get('/{id}', [VideoController::class, 'show']);
     Route::post('/upload', [VideoController::class, 'upload']);
 });
-
-//TODO: fix later (for testing)
-Route::get('videos/{id}', [VideoController::class, 'show_videos']);
-Route::post('send_message', [StreamingController::class, 'send_message']);
-Route::get('messages/{id}', [StreamingController::class, 'show_messages']);
-Route::get('stop', [StreamingController::class, 'stop']);
-Route::get('play', [StreamingController::class, 'play']);
-Route::get('test', [StreamingController::class, 'test']);
 
 
 Route::group(['middleware' => 'api', 'prefix' => 'parties'], function ($router){
     Route::get('/', [PartyController::class, 'index']);
-    Route::get('/{id}', [PartyController::class, 'show']);
+    Route::post('/', [PartyController::class, 'create']);
+    Route::get('/{id}', [PartyController::class, 'joinParty']);
+
+    //Requests that should broadcasts events when received 
+    Route::put('/status/{party_id}', [StreamingController::class, 'changeStatus']);
+    Route::put('/playtime/{party_id}', [StreamingController::class, 'changeVideoPlaytime']);
+    Route::post('/message/{party_id}', [StreamingController::class, 'newMessage']);
+    Route::get('/messages/{party_id}', [StreamingController::class, 'showMessages']);
 }); 

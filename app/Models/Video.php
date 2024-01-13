@@ -15,17 +15,13 @@ class Video extends Model
         'path',
         'user_id',
         'description',
-        'image'
+        'image',
+        'extension'
     ];
 
     
-    public function getPathAttribute($value)
+    public function user()
     {
-        return Storage::url($value);
-    }
-
-    public function getImageAttribute($value)
-    {
-        return Storage::url($value);
+        return $this->belongsTo(User::class, 'user_id', 'id');
     }
 }

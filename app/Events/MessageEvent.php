@@ -3,6 +3,7 @@
 namespace App\Events;
 
 use App\Models\Message;
+use App\Models\Party;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -19,9 +20,11 @@ class MessageEvent implements ShouldBroadcast
      * Create a new event instance.
      */
     public $message_id;
+    public $party;
 
-    public function __construct($message_id)
+    public function __construct(Party $party, $message_id)
     {
+        $this->party = $party;
         $this->message_id = $message_id;
     }
 
@@ -29,7 +32,6 @@ class MessageEvent implements ShouldBroadcast
     {
         $message = Message::where('id', $this->message_id)->with('user')->first()->toArray();
         return $message;
- 
     }
 
     /**
@@ -40,7 +42,7 @@ class MessageEvent implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new Channel('message-channel'),
+            new Channel('message-channel'. $this->party->id),
         ];
     }
 }
