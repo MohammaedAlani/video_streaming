@@ -16,7 +16,6 @@ class PartyVideoPlayTimeChanged implements ShouldBroadcast
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $party;
-
     public $current_time;
     /**
      * Create a new event instance.
@@ -36,14 +35,14 @@ class PartyVideoPlayTimeChanged implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel("party." . $this->party->id),
+            new Channel('video-channel-party' . $this->party->id),
         ];
     }
 
     public function boradcastWith()
     {
         return [
-            'current_time' => $this->current_time
+            'current_time' => $this->current_time,
         ];
     }
 

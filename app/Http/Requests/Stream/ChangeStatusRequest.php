@@ -1,12 +1,11 @@
 <?php
 
-namespace App\Http\Requests\Party;
+namespace App\Http\Requests\Stream;
 
-use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 
-class CreatePartyRequest extends FormRequest
+class ChangeStatusRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -27,10 +26,8 @@ class CreatePartyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'video_id' => 'required|integer|exists:videos,id',
-            //TODO: more rules should be applied
-            'name' => 'required',
-            'current_video_time' => 'required'
+            'party_id' => 'required|integer|exists:parties,id',
+            'action' => 'required', //TODO: stop or start
         ];
     }
 }

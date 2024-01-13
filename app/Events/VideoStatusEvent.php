@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\Models\Party;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -9,6 +10,7 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class VideoStatusEvent implements ShouldBroadcast
 {
@@ -19,27 +21,17 @@ class VideoStatusEvent implements ShouldBroadcast
      */
 
     public $status;
-    public $current_time;
+    public $party;
 
-    public function __construct($status, $current_time = null)
+    public function __construct(Party $party, $status)
     {
         $this->status = $status;
-        $this->current_time = $current_time;
-        
+        $this->party = $party;
     }
 
     public function broadcastWith()
     {
-        if(is_null($this->current_time)) {
-            return ['status' => $this->status];
-        }
-        $user_id = 1;
-
-        return [
-            'status' => $this->status,
-            'current_time' => $this->current_time,
-            'user_id' => $user_id
-        ];
+        return ['status' => $this->status];        
     }
 
     /**
@@ -50,7 +42,7 @@ class VideoStatusEvent implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new Channel('video-status-channel'),
+            new Channel('video-channel-party' . $this->party->id),
         ];
     }
 }
